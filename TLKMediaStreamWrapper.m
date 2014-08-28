@@ -6,6 +6,13 @@
 
 #import "TLKMediaStreamWrapper.h"
 
+@interface TLKMediaStreamWrapper ()
+@property (readwrite) RTCMediaStream* stream;
+@property (readwrite) NSString* peerID;
+@property (readwrite) BOOL videoMuted;
+@property (readwrite) BOOL audioMuted;
+@end
+
 @implementation TLKMediaStreamWrapper
 
 @end

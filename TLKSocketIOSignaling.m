@@ -13,6 +13,8 @@
 #import "TLKMediaStreamWrapper.h"
 #import "TLKSocketIOSignalingDelegate.h"
 
+// Need to be able to set these values from here, so duplicate the internal write properties from
+// the implimentation. TODO: figure out a better way to handle this
 @interface TLKMediaStreamWrapper ()
 @property (readwrite) RTCMediaStream* stream;
 @property (readwrite) NSString* peerID;
