@@ -62,6 +62,10 @@
 }
 
 -(void)connectToServer:(NSString*)apiServer success:(void(^)(void))successCallback failure:(void(^)(NSError*))failureCallback {
+    [self connectToServer:apiServer port:8888 secure:YES success:successCallback failure:failureCallback];
+}
+
+-(void)connectToServer:(NSString*)apiServer port:(int)port secure:(BOOL)secure success:(void(^)(void))successCallback failure:(void(^)(NSError*))failureCallback {
     
     if (self.socket) {
         [self disconnectSocket];
@@ -69,9 +73,9 @@
     
     __weak TLKSocketIOSignaling* weakSelf = self;
 
-    self.socket = [[AZSocketIO alloc] initWithHost:apiServer andPort:@"443" secure:YES];
+    self.socket = [[AZSocketIO alloc] initWithHost:apiServer andPort:[NSString stringWithFormat:@"%d",port] secure:secure];
 
-    NSString* originURL = [NSString stringWithFormat:@"https://%@:443", apiServer];
+    NSString* originURL = [NSString stringWithFormat:@"https://%@:%d", apiServer, port];
     [self.socket setValue:originURL forHTTPHeaderField:@"Origin"];
 
     self.socket.messageRecievedBlock = ^(id data) { [weakSelf messageReceived:data]; };
