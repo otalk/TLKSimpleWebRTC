@@ -138,9 +138,17 @@
         }
     }];
     
+    NSArray* objects = [self.remoteMediaStreamWrappers objectsAtIndexes:toRemove];
+    
     [mutable removeObjectsAtIndexes:toRemove];
     
     self.remoteMediaStreamWrappers = mutable;
+    
+    if([self.delegate respondsToSelector:@selector(removedStream:)]) {
+        for(TLKMediaStreamWrapper* wrapper in objects) {
+            [self.delegate removedStream:wrapper];
+        }
+    }
 }
 
 -(void)joinRoom:(NSString*)room withKey:(NSString*)key success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
@@ -248,12 +256,18 @@
     
     if ([eventName isEqualToString:@"locked"]) {
         self.roomKey = (NSString*)[data objectAtIndex:0];
-        [self.delegate lockChange:TRUE];
+        if([self.delegate respondsToSelector:@selector(lockChange:)]) {
+            [self.delegate lockChange:TRUE];
+        }
     } else if ([eventName isEqualToString:@"unlocked"]) {
         self.roomKey = nil;
-        [self.delegate lockChange:FALSE];
+        if([self.delegate respondsToSelector:@selector(lockChange:)]) {
+            [self.delegate lockChange:FALSE];
+        }
     } else if ([eventName isEqualToString:@"passwordRequired"]) {
-        [self.delegate serverRequiresPassword:self];
+        if([self.delegate respondsToSelector:@selector(serverRequiresPassword:)]) {
+            [self.delegate serverRequiresPassword:self];
+        }
     } else if ([eventName isEqualToString:@"stunservers"] || [eventName isEqualToString:@"turnservers"]) {
         NSArray* serverList = data[0];
         for(NSDictionary* info in serverList) {
@@ -318,11 +332,15 @@
     } else if ([dictionary[@"payload"][@"name"] isEqualToString:@"audio"]) {
         TLKMediaStreamWrapper* stream = [self streamWrapperForIdentifier:dictionary[@"from"]];
         stream.audioMuted = [dictionary[@"type"] isEqualToString:@"mute"];
-        [self.delegate peer:dictionary[@"from"] toggledAudioMute:stream.audioMuted];
+        if([self.delegate respondsToSelector:@selector(peer:toggledAudioMute:)]) {
+            [self.delegate peer:dictionary[@"from"] toggledAudioMute:stream.audioMuted];
+        }
     } else if ([dictionary[@"payload"][@"name"] isEqualToString:@"video"]) {
         TLKMediaStreamWrapper* stream = [self streamWrapperForIdentifier:dictionary[@"from"]];
         stream.videoMuted = [dictionary[@"type"] isEqualToString:@"mute"];
-        [self.delegate peer:dictionary[@"from"] toggledAudioMute:stream.videoMuted];
+        if([self.delegate respondsToSelector:@selector(peer:toggledVideoMute:)]) {
+            [self.delegate peer:dictionary[@"from"] toggledVideoMute:stream.videoMuted];
+        }
     }
 }
 
@@ -389,6 +407,10 @@
     else {
         self.remoteMediaStreamWrappers = [self.remoteMediaStreamWrappers arrayByAddingObject:wrapper];
     }
+    
+    if([self.delegate respondsToSelector:@selector(addedStream:)]) {
+        [self.delegate addedStream:wrapper];
+    }
 }
 
 - (void)removedStream:(RTCMediaStream *)stream forPeerWithID:(NSString *)peerID {
@@ -401,9 +423,17 @@
         }
     }];
     
+    NSArray* objects = [self.remoteMediaStreamWrappers objectsAtIndexes:toRemove];
+    
     [mutable removeObjectsAtIndexes:toRemove];
     
     self.remoteMediaStreamWrappers = mutable;
+    
+    if([self.delegate respondsToSelector:@selector(removedStream:)]) {
+        for(TLKMediaStreamWrapper* wrapper in objects) {
+            [self.delegate removedStream:wrapper];
+        }
+    }
 }
 
 #pragma mark - Mute/Unmute Status
