@@ -9,4 +9,5 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/otalk/TLKSimpleWebRTC.git", :tag => s.version.to_s }
   s.source_files = "*.{h,m}"
   s.requires_arc = true
+  s.dependency 'AZSocketIO', '0.0.5'
 end
