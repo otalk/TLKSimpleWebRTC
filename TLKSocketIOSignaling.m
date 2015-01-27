@@ -15,15 +15,20 @@
 
 // Need to be able to set these values from here, so duplicate the internal write properties from
 // the implimentation. TODO: figure out a better way to handle this
-@interface TLKMediaStreamWrapper () <
-    TLKSignalDelegate>
+@interface TLKMediaStreamWrapper ()
+{
+}
+
 @property (readwrite) RTCMediaStream* stream;
 @property (readwrite) NSString* peerID;
 @property (readwrite) BOOL videoMuted;
 @property (readwrite) BOOL audioMuted;
+
 @end
 
-@interface TLKSocketIOSignaling () {
+@interface TLKSocketIOSignaling () <
+    TLKSignalDelegate>
+{
     BOOL _localAudioMuted;
     BOOL _localVideoMuted;
 }
