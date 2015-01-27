@@ -83,8 +83,8 @@
     NSString* originURL = [NSString stringWithFormat:@"https://%@:%d", apiServer, port];
     [self.socket setValue:originURL forHTTPHeaderField:@"Origin"];
 
-    self.socket.messageRecievedBlock = ^(id data) { [weakSelf messageReceived:data]; };
-    self.socket.eventRecievedBlock = ^(NSString* eventName, id data) { [weakSelf eventReceived:eventName withData:data]; };
+    self.socket.messageReceivedBlock = ^(id data) { [weakSelf messageReceived:data]; };
+    self.socket.eventReceivedBlock = ^(NSString* eventName, id data) { [weakSelf eventReceived:eventName withData:data]; };
     self.socket.disconnectedBlock = ^() { [weakSelf socketDisconnected]; };
     self.socket.errorBlock = ^(NSError* error) { [weakSelf socketReceivedError:error]; };
     
