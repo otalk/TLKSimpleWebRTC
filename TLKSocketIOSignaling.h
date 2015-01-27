@@ -5,11 +5,10 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-#import "TLKWebRTC.h"
 
 @protocol TLKSocketIOSignalingDelegate;
 
-@interface TLKSocketIOSignaling : NSObject <TLKSignalDelegate>
+@interface TLKSocketIOSignaling : NSObject
 
 - (instancetype)initAllowingVideo:(BOOL)allowVideo;
 - (instancetype)init; // allows video by default
