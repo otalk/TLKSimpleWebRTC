@@ -7,6 +7,8 @@
 #import <AVFoundation/AVFoundation.h>
 
 @protocol TLKSocketIOSignalingDelegate;
+@class TLKMediaStreamWrapper;
+@class RTCMediaStream;
 
 @interface TLKSocketIOSignaling : NSObject
 
