@@ -7,7 +7,7 @@
 #import <AVFoundation/AVFoundation.h>
 
 @protocol TLKSocketIOSignalingDelegate;
-@class TLKMediaStreamWrapper;
+@class TLKMediaStream;
 @class RTCMediaStream;
 
 @interface TLKSocketIOSignaling : NSObject
@@ -30,7 +30,7 @@
 
 @property (readonly, nonatomic) RTCMediaStream *localMediaStream;
 
-// each element is a TLKMediaStreamWrapper, KVO this to get notified when peers connect/disconnect
+// each element is a TLKMediaStream, KVO this to get notified when peers connect/disconnect
 @property (readonly, nonatomic) NSArray *remoteMediaStreamWrappers;
 
 // Get / set local audio states. Note: use these instead of setting enabled state directly on localMediaStream, these need to be signaled to keep visuals
@@ -52,8 +52,8 @@
 // get the room key from the user, and then call connect again with the correct key
 - (void)serverRequiresPassword:(TLKSocketIOSignaling *)server;
 
-- (void)addedStream:(TLKMediaStreamWrapper *)stream;
-- (void)removedStream:(TLKMediaStreamWrapper *)stream;
+- (void)addedStream:(TLKMediaStream *)stream;
+- (void)removedStream:(TLKMediaStream *)stream;
 
 - (void)peer:(NSString *)peer toggledAudioMute:(BOOL)mute;
 - (void)peer:(NSString *)peer toggledVideoMute:(BOOL)mute;

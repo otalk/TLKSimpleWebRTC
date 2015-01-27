@@ -5,24 +5,25 @@
 
 
 #import "TLKSocketIOSignaling.h"
+#import "TLKMediaStream.h"
+
+#import "TLKWebRTC.h"
 #import "AZSocketIO.h"
 #import "RTCMediaStream.h"
 #import "RTCICEServer.h"
 #import "RTCVideoTrack.h"
 #import "RTCAudioTrack.h"
-#import "TLKMediaStreamWrapper.h"
-#import "TLKWebRTC.h"
 
-// Need to be able to set these values from here, so duplicate the internal write properties from
-// the implimentation. TODO: figure out a better way to handle this
-@interface TLKMediaStreamWrapper ()
+#pragma mark - TLKMediaStream
+
+@interface TLKMediaStream (Secrets)
 {
 }
 
-@property (readwrite) RTCMediaStream* stream;
-@property (readwrite) NSString* peerID;
-@property (readwrite) BOOL videoMuted;
-@property (readwrite) BOOL audioMuted;
+@property (nonatomic, readwrite) RTCMediaStream *stream;
+@property (nonatomic, readwrite) NSString *peerID;
+@property (nonatomic, readwrite) BOOL videoMuted;
+@property (nonatomic, readwrite) BOOL audioMuted;
 
 @end
 
@@ -125,8 +126,8 @@
     self.socket = nil;
 }
 
--(TLKMediaStreamWrapper*)streamWrapperForIdentifier:(NSString*)peerIdentifier {
-    __block TLKMediaStreamWrapper* found = nil;
+- (TLKMediaStream *)streamWrapperForIdentifier:(NSString*)peerIdentifier {
+    __block TLKMediaStream* found = nil;
     
     [self.remoteMediaStreamWrappers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         if([((TLKMediaStreamWrapper*)obj).peerID isEqualToString:peerIdentifier]) {
@@ -340,13 +341,13 @@
         [self.currentClients removeObject:dictionary[@"id"]];
         
     } else if ([dictionary[@"payload"][@"name"] isEqualToString:@"audio"]) {
-        TLKMediaStreamWrapper* stream = [self streamWrapperForIdentifier:dictionary[@"from"]];
+        TLKMediaStream *stream = [self streamWrapperForIdentifier:dictionary[@"from"]];
         stream.audioMuted = [dictionary[@"type"] isEqualToString:@"mute"];
         if([self.delegate respondsToSelector:@selector(peer:toggledAudioMute:)]) {
             [self.delegate peer:dictionary[@"from"] toggledAudioMute:stream.audioMuted];
         }
     } else if ([dictionary[@"payload"][@"name"] isEqualToString:@"video"]) {
-        TLKMediaStreamWrapper* stream = [self streamWrapperForIdentifier:dictionary[@"from"]];
+        TLKMediaStream *stream = [self streamWrapperForIdentifier:dictionary[@"from"]];
         stream.videoMuted = [dictionary[@"type"] isEqualToString:@"mute"];
         if([self.delegate respondsToSelector:@selector(peer:toggledVideoMute:)]) {
             [self.delegate peer:dictionary[@"from"] toggledVideoMute:stream.videoMuted];
