@@ -11,7 +11,6 @@
 #import "RTCVideoTrack.h"
 #import "RTCAudioTrack.h"
 #import "TLKMediaStreamWrapper.h"
-#import "TLKSocketIOSignalingDelegate.h"
 
 // Need to be able to set these values from here, so duplicate the internal write properties from
 // the implimentation. TODO: figure out a better way to handle this

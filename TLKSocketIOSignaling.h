@@ -9,7 +9,6 @@
 
 @protocol TLKSocketIOSignalingDelegate;
 
-// -------------------------------------------------------
 @interface TLKSocketIOSignaling : NSObject <TLKSignalDelegate>
 
 - (instancetype)initAllowingVideo:(BOOL)allowVideo;
@@ -20,6 +19,7 @@
 -(void)joinRoom:(NSString*)room withKey:(NSString*)key success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback;
 -(void)joinRoom:(NSString*)room success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback;
 -(void)leaveRoom;
+@property (weak, nonatomic) id <TLKSocketIOSignalingDelegate> delegate;
 
 -(void)lockRoomWithKey:(NSString*)key success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback;
 -(void)unlockRoomWithSuccess:(void(^)(void))successCallback failure:(void(^)(void))failureCallback;
@@ -36,11 +36,25 @@
 @property (nonatomic) BOOL localAudioMuted;
 @property (nonatomic) BOOL localVideoMuted;
 
-@property (weak, nonatomic) id <TLKSocketIOSignalingDelegate> delegate;
-
 // Information about the current room state
 @property (readonly, nonatomic) NSString* roomName;
 @property (readonly, nonatomic) NSString* roomKey;
 @property (readonly, nonatomic) BOOL roomIsLocked;
+
+@end
+
+@protocol TLKSocketIOSignalingDelegate <NSObject>
+@optional
+
+// Called when a connect request has failed due to a bad room key. Delegate is expected to
+// get the room key from the user, and then call connect again with the correct key
+- (void)serverRequiresPassword:(TLKSocketIOSignaling *)server;
+
+- (void)addedStream:(TLKMediaStreamWrapper *)stream;
+- (void)removedStream:(TLKMediaStreamWrapper *)stream;
+
+- (void)peer:(NSString *)peer toggledAudioMute:(BOOL)mute;
+- (void)peer:(NSString *)peer toggledVideoMute:(BOOL)mute;
+- (void)lockChange:(BOOL)locked;
 
 @end
