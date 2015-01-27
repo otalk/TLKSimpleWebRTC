@@ -50,7 +50,7 @@
 
 @implementation TLKSocketIOSignaling
 
-- (instancetype)initAllowingVideo:(BOOL)allowVideo {
+- (instancetype)initWithVideo:(BOOL)allowVideo {
     self = [super init];
     if (self) {
         self->_allowVideo = allowVideo;

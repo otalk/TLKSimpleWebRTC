@@ -12,8 +12,7 @@
 
 @interface TLKSocketIOSignaling : NSObject
 
-- (instancetype)initAllowingVideo:(BOOL)allowVideo;
-- (instancetype)init; // allows video by default
+- (instancetype)initWithVideo:(BOOL)allowVideo;
 
 @property (weak, nonatomic) id <TLKSocketIOSignalingDelegate> delegate;
 
