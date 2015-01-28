@@ -52,12 +52,46 @@
 
 @implementation TLKSocketIOSignaling
 
+#pragma mark - getters/setters
+
+- (BOOL)localAudioMuted {
+    if (self.localMediaStream.audioTracks.count) {
+        RTCAudioTrack* audioTrack = self.localMediaStream.audioTracks[0];
+        return !audioTrack.isEnabled;
+    }
+    return YES;
+}
+
+- (void)setLocalAudioMuted:(BOOL)localAudioMuted {
+    if(self.localMediaStream.audioTracks.count) {
+        RTCAudioTrack* audioTrack = self.localMediaStream.audioTracks[0];
+        [audioTrack setEnabled:!localAudioMuted];
+        [self _sendMuteMessagesForTrack:@"audio" mute:localAudioMuted];
+    }
+}
+
+- (BOOL)localVideoMuted {
+    if (self.localMediaStream.videoTracks.count) {
+        RTCVideoTrack* videoTrack = self.localMediaStream.videoTracks[0];
+        return !videoTrack.isEnabled;
+    }
+    return YES;
+}
+
+- (void)setLocalVideoMuted:(BOOL)localVideoMuted {
+    if (self.localMediaStream.videoTracks.count) {
+        RTCVideoTrack* videoTrack = self.localMediaStream.videoTracks[0];
+        [videoTrack setEnabled:!localVideoMuted];
+        [self _sendMuteMessagesForTrack:@"video" mute:localVideoMuted];
+    }
+}
+
 #pragma mark - object lifecycle
 
 - (instancetype)initWithVideo:(BOOL)allowVideo {
     self = [super init];
     if (self) {
-        self->_allowVideo = allowVideo;
+        _allowVideo = allowVideo;
         self.currentClients = [[NSMutableSet alloc] init];
     }
     return self;
@@ -104,7 +138,7 @@
     
     
     [self.socket connectWithSuccess:^{
-        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             
             if (!weakSelf.webRTC) {
                 weakSelf.webRTC = [[TLKWebRTC alloc] initAllowingVideo:weakSelf.allowVideo != 0];
@@ -400,7 +434,7 @@
 
 - (void)didObserveICEConnectionStateChange:(RTCICEConnectionState)state forPeerWithID:(NSString *)peerID {
     if ((state == RTCICEConnectionConnected) || (state == RTCICEConnectionClosed)) {
-        [self broadcastMuteStates];
+        [self _broadcastMuteStates];
     }
     else if (state == RTCICEConnectionFailed) {
         NSDictionary* args = @{@"to": peerID,
@@ -451,10 +485,10 @@
     }
 }
 
-#pragma mark - Mute/Unmute Status
+#pragma mark - Mute/Unmute utilities
 
--(void)sendMuteMessagesForTrack:(NSString*)trackString mute:(BOOL)mute {
-    NSError* error;
+- (void)_sendMuteMessagesForTrack:(NSString *)trackString mute:(BOOL)mute {
+    NSError *error = nil;
 
     for (NSString* peerID in self.currentClients) {
         [self.socket emit:@"message"
@@ -465,43 +499,9 @@
     }
 }
 
--(BOOL)localAudioMuted {
-    if(self.localMediaStream.audioTracks.count) {
-        RTCAudioTrack* audioTrack = self.localMediaStream.audioTracks[0];
-        return !audioTrack.isEnabled;
-    }
-    
-    return YES;
-}
-
--(void)setLocalAudioMuted:(BOOL)localAudioMuted {
-    if(self.localMediaStream.audioTracks.count) {
-        RTCAudioTrack* audioTrack = self.localMediaStream.audioTracks[0];
-        [audioTrack setEnabled:!localAudioMuted];
-        [self sendMuteMessagesForTrack:@"audio" mute:localAudioMuted];
-    }
-}
-
--(BOOL)localVideoMuted {
-    if(self.localMediaStream.videoTracks.count) {
-        RTCVideoTrack* videoTrack = self.localMediaStream.videoTracks[0];
-        return !videoTrack.isEnabled;
-    }
-    
-    return YES;
-}
-
--(void)setLocalVideoMuted:(BOOL)localVideoMuted {
-    if(self.localMediaStream.videoTracks.count) {
-        RTCVideoTrack* videoTrack = self.localMediaStream.videoTracks[0];
-        [videoTrack setEnabled:!localVideoMuted];
-        [self sendMuteMessagesForTrack:@"video" mute:localVideoMuted];
-    }
-}
-
--(void)broadcastMuteStates {
-    [self sendMuteMessagesForTrack:@"audio" mute:self.localAudioMuted];
-    [self sendMuteMessagesForTrack:@"video" mute:self.localVideoMuted];
+- (void)_broadcastMuteStates {
+    [self _sendMuteMessagesForTrack:@"audio" mute:self.localAudioMuted];
+    [self _sendMuteMessagesForTrack:@"video" mute:self.localVideoMuted];
 }
 
 @end
