@@ -212,7 +212,7 @@
 }
 
 - (void)joinRoom:(NSString*)room withKey:(NSString*)key success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
-    NSError* error;
+    NSError *error = nil;
     id args;
     if (key) {
         args = @{@"name": room, @"key": key};
@@ -263,7 +263,7 @@
 }
 
 - (void)lockRoomWithKey:(NSString*)key success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
-    NSError* error;
+    NSError *error = nil;
     [self.socket emit:@"lockRoom" args:key error:&error ackWithArgs:^(NSArray *data) {
         if (data[0] == [NSNull null]) {
             if(successCallback) {
@@ -285,7 +285,7 @@
 }
 
 - (void)unlockRoomWithSuccess:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
-    NSError* error;
+    NSError *error = nil;
     [self.socket emit:@"unlockRoom" args:nil error:&error ackWithArgs:^(NSArray *data) {
         if (data[0] == [NSNull null]) {
             if(successCallback) {
