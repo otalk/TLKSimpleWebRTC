@@ -58,14 +58,13 @@
 
 @end
 
-
 @implementation TLKSocketIOSignaling
 
 #pragma mark - getters/setters
 
 - (BOOL)localAudioMuted {
     if (self.localMediaStream.audioTracks.count) {
-        RTCAudioTrack* audioTrack = self.localMediaStream.audioTracks[0];
+        RTCAudioTrack *audioTrack = self.localMediaStream.audioTracks[0];
         return !audioTrack.isEnabled;
     }
     return YES;
@@ -73,7 +72,7 @@
 
 - (void)setLocalAudioMuted:(BOOL)localAudioMuted {
     if(self.localMediaStream.audioTracks.count) {
-        RTCAudioTrack* audioTrack = self.localMediaStream.audioTracks[0];
+        RTCAudioTrack *audioTrack = self.localMediaStream.audioTracks[0];
         [audioTrack setEnabled:!localAudioMuted];
         [self _sendMuteMessagesForTrack:@"audio" mute:localAudioMuted];
     }
@@ -112,14 +111,57 @@
 
 - (instancetype)init
 {
-    return [self initAllowingVideo:YES];
+    return [self initWithVideo:YES];
 }
 
-#pragma mark -
+#pragma mark - peer/room utilities
 
-+ (NSSet*)keyPathsForValuesAffectingRoomIsLocked {
++ (NSSet *)keyPathsForValuesAffectingRoomIsLocked {
     return [NSSet setWithObject:@"roomKey"];
 }
+
+- (void)_disconnectSocket {
+    [self.socket disconnect];
+    self.socket = nil;
+}
+
+- (TLKMediaStream *)_streamForPeerIdentifier:(NSString *)peerIdentifier {
+    __block TLKMediaStream *found = nil;
+    
+    [self.remoteMediaStreamWrappers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if ([((TLKMediaStreamWrapper*)obj).peerID isEqualToString:peerIdentifier]) {
+            found = obj;
+            *stop = YES;
+        }
+    }];
+    
+    return found;
+}
+
+- (void)_peerDisconnectedForIdentifier:(NSString *)peerIdentifier {
+    NSMutableArray* mutable = [self.remoteMediaStreamWrappers mutableCopy];
+    NSMutableIndexSet* toRemove = [NSMutableIndexSet new];
+    
+    [mutable enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if([((TLKMediaStreamWrapper*)obj).peerID isEqualToString:peerID]) {
+            [toRemove addIndex:idx];
+        }
+    }];
+    
+    NSArray* objects = [self.remoteMediaStreamWrappers objectsAtIndexes:toRemove];
+    
+    [mutable removeObjectsAtIndexes:toRemove];
+    
+    self.remoteMediaStreamWrappers = mutable;
+    
+    if([self.delegate respondsToSelector:@selector(removedStream:)]) {
+        for(TLKMediaStreamWrapper* wrapper in objects) {
+            [self.delegate removedStream:wrapper];
+        }
+    }
+}
+
+#pragma mark - connect
 
 - (void)connectToServer:(NSString*)apiServer success:(void(^)(void))successCallback failure:(void(^)(NSError*))failureCallback {
     [self connectToServer:apiServer port:8888 secure:YES success:successCallback failure:failureCallback];
@@ -128,7 +170,7 @@
 - (void)connectToServer:(NSString*)apiServer port:(int)port secure:(BOOL)secure success:(void(^)(void))successCallback failure:(void(^)(NSError*))failureCallback {
     
     if (self.socket) {
-        [self disconnectSocket];
+        [self _disconnectSocket];
     }
     
     __weak TLKSocketIOSignaling* weakSelf = self;
@@ -168,47 +210,6 @@
             failureCallback(error);
         }
     }];
- }
-
-- (void)disconnectSocket {
-    [self.socket disconnect];
-    self.socket = nil;
-}
-
-- (TLKMediaStream *)streamWrapperForIdentifier:(NSString*)peerIdentifier {
-    __block TLKMediaStream* found = nil;
-    
-    [self.remoteMediaStreamWrappers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if([((TLKMediaStreamWrapper*)obj).peerID isEqualToString:peerIdentifier]) {
-            found = obj;
-            *stop = YES;
-        }
-    }];
-    
-    return found;
-}
-
-- (void)peerDisconnectedForID:(NSString*)peerID {
-    NSMutableArray* mutable = [self.remoteMediaStreamWrappers mutableCopy];
-    NSMutableIndexSet* toRemove = [NSMutableIndexSet new];
-    
-    [mutable enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if([((TLKMediaStreamWrapper*)obj).peerID isEqualToString:peerID]) {
-            [toRemove addIndex:idx];
-        }
-    }];
-    
-    NSArray* objects = [self.remoteMediaStreamWrappers objectsAtIndexes:toRemove];
-    
-    [mutable removeObjectsAtIndexes:toRemove];
-    
-    self.remoteMediaStreamWrappers = mutable;
-    
-    if([self.delegate respondsToSelector:@selector(removedStream:)]) {
-        for(TLKMediaStreamWrapper* wrapper in objects) {
-            [self.delegate removedStream:wrapper];
-        }
-    }
 }
 
 - (void)joinRoom:(NSString*)room withKey:(NSString*)key success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
@@ -259,7 +260,7 @@
     
     self.currentClients = [[NSMutableSet alloc] init];
     
-    [self disconnectSocket];
+    [self _disconnectSocket];
 }
 
 - (void)lockRoomWithKey:(NSString*)key success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
@@ -390,13 +391,13 @@
         [self.currentClients removeObject:dictionary[@"id"]];
         
     } else if ([dictionary[@"payload"][@"name"] isEqualToString:@"audio"]) {
-        TLKMediaStream *stream = [self streamWrapperForIdentifier:dictionary[@"from"]];
+        TLKMediaStream *stream = [self _streamForPeerIdentifier:dictionary[@"from"]];
         stream.audioMuted = [dictionary[@"type"] isEqualToString:@"mute"];
         if([self.delegate respondsToSelector:@selector(peer:toggledAudioMute:)]) {
             [self.delegate peer:dictionary[@"from"] toggledAudioMute:stream.audioMuted];
         }
     } else if ([dictionary[@"payload"][@"name"] isEqualToString:@"video"]) {
-        TLKMediaStream *stream = [self streamWrapperForIdentifier:dictionary[@"from"]];
+        TLKMediaStream *stream = [self _streamForPeerIdentifier:dictionary[@"from"]];
         stream.videoMuted = [dictionary[@"type"] isEqualToString:@"mute"];
         if([self.delegate respondsToSelector:@selector(peer:toggledVideoMute:)]) {
             [self.delegate peer:dictionary[@"from"] toggledVideoMute:stream.videoMuted];

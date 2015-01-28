@@ -6,6 +6,9 @@
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
 
+typedef void (^TLKSocketIOSignalingSuccessBlock)(void);
+typedef void (^TLKSocketIOSignalingFailureBlock)(NSError *error);
+
 @protocol TLKSocketIOSignalingDelegate;
 @class TLKMediaStream;
 @class RTCMediaStream;
@@ -38,9 +41,9 @@
 @property (nonatomic) BOOL localVideoMuted;
 
 // Information about the current room state
+@property (readonly, nonatomic, getter=isRoomLocked) BOOL roomLocked;
 @property (readonly, nonatomic) NSString *roomName;
 @property (readonly, nonatomic) NSString *roomKey;
-@property (readonly, nonatomic, getter=isRoomLocked) BOOL roomLocked;
 
 @end
 
