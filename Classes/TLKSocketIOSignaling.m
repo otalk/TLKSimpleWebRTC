@@ -14,6 +14,15 @@
 #import "RTCVideoTrack.h"
 #import "RTCAudioTrack.h"
 
+#define LOG_SIGNALING 1
+#ifndef DLog
+#if !defined(NDEBUG) && LOG_SIGNALING
+#   define DLog(fmt, ...) NSLog((@"signaling: " fmt), ##__VA_ARGS__);
+#else
+#   define DLog(...)
+#endif
+#endif
+
 #pragma mark - TLKMediaStream
 
 @interface TLKMediaStream (Secrets)
@@ -154,7 +163,7 @@
             });
         });
     } andFailure:^(NSError *error) {
-        NSLog(@"Failed to connect socket.io: %@", error);
+        DLog(@"Failed to connect socket.io: %@", error);
         if (failureCallback) {
             failureCallback(error);
         }
@@ -398,7 +407,8 @@
 - (void)socketDisconnected {
 }
 
-- (void)socketReceivedError:(NSError*)error {
+- (void)socketReceivedError:(NSError *)error {
+    DLog(@"socket received error occured %@", error);
 }
 
 #pragma mark - TLKWebRTCDelegate
