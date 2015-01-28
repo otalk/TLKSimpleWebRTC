@@ -36,16 +36,16 @@
     BOOL _localVideoMuted;
 }
 
-@property (nonatomic, strong) AZSocketIO* socket;
-@property (nonatomic, strong) TLKWebRTC* webRTC;
+@property (nonatomic, strong) AZSocketIO *socket;
+@property (nonatomic, strong) TLKWebRTC *webRTC;
 
-@property (nonatomic, readwrite) NSString* roomName;
-@property (nonatomic, readwrite) NSString* roomKey;
+@property (nonatomic, readwrite) NSString *roomName;
+@property (nonatomic, readwrite) NSString *roomKey;
 
-@property (strong, readwrite, nonatomic) RTCMediaStream* localMediaStream;
-@property (strong, readwrite, nonatomic) NSArray* remoteMediaStreamWrappers;
+@property (strong, readwrite, nonatomic) RTCMediaStream *localMediaStream;
+@property (strong, readwrite, nonatomic) NSArray *remoteMediaStreamWrappers;
 
-@property (strong, nonatomic) NSMutableSet* currentClients;
+@property (strong, nonatomic) NSMutableSet *currentClients;
 
 @end
 
