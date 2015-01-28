@@ -40,7 +40,7 @@
 // Information about the current room state
 @property (readonly, nonatomic) NSString *roomName;
 @property (readonly, nonatomic) NSString *roomKey;
-@property (readonly, nonatomic) BOOL roomIsLocked;
+@property (readonly, nonatomic, getter=isRoomLocked) BOOL roomLocked;
 
 @end
 

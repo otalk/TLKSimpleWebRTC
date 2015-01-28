@@ -95,6 +95,10 @@
     }
 }
 
+- (BOOL)isRoomLocked {
+    return [self.roomKey length] > 0;
+}
+
 #pragma mark - object lifecycle
 
 - (instancetype)initWithVideo:(BOOL)allowVideo {
@@ -112,10 +116,6 @@
 }
 
 #pragma mark -
-
-- (BOOL)roomIsLocked {
-    return [self.roomKey length] > 0;
-}
 
 + (NSSet*)keyPathsForValuesAffectingRoomIsLocked {
     return [NSSet setWithObject:@"roomKey"];
