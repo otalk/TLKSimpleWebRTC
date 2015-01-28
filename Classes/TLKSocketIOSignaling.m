@@ -367,39 +367,39 @@
 - (void)socketReceivedError:(NSError*)error {
 }
 
-#pragma mark - TLKSignalDelegate methods
+#pragma mark - TLKWebRTCDelegate
 
-- (void)sendICECandidate:(RTCICECandidate *)candidate forPeerWithID:(NSString *)peerID {
-    NSDictionary* args = @{@"to": peerID,
+- (void)didSendSDPOffer:(RTCSessionDescription *)offer forPeerWithID:(NSString *)peerID {
+    NSDictionary *args = @{@"to": peerID,
+                           @"roomType": @"video",
+                           @"type": offer.type,
+                           @"payload": @{@"type": offer.type, @"sdp": offer.description}};
+    NSError *error = nil;
+    [self.socket emit:@"message" args:@[args] error:&error];
+}
+
+- (void)didSendSDPAnswer:(RTCSessionDescription *)answer forPeerWithID:(NSString *)peerID {
+    NSDictionary *args = @{@"to": peerID,
+                           @"roomType": @"video",
+                           @"type": answer.type,
+                           @"payload": @{@"type": answer.type, @"sdp": answer.description}};
+    NSError *error = nil;
+    [self.socket emit:@"message" args:@[args] error:&error];
+}
+
+- (void)didSendICECandidate:(RTCICECandidate *)candidate forPeerWithID:(NSString *)peerID {
+    NSDictionary *args = @{@"to": peerID,
                            @"roomType": @"video",
                            @"type": @"candidate",
                            @"payload": @{ @"candidate" : @{@"sdpMid": candidate.sdpMid,
                                                            @"sdpMLineIndex": [NSString stringWithFormat:@"%d", candidate.sdpMLineIndex],
                                                            @"candidate": candidate.sdp}}};
-    NSError* error;
+    NSError *error = nil;
     [self.socket emit:@"message" args:@[args] error:&error];
 }
 
-- (void)sendSDPOffer:(RTCSessionDescription *)offer forPeerWithID:(NSString *)peerID {
-    NSDictionary* args = @{@"to": peerID,
-                           @"roomType": @"video",
-                           @"type": offer.type,
-                           @"payload": @{@"type": offer.type, @"sdp": offer.description}};
-    NSError* error;
-    [self.socket emit:@"message" args:@[args] error:&error];
-}
-
-- (void)sendSDPAnswer:(RTCSessionDescription *)answer forPeerWithID:(NSString *)peerID {
-    NSDictionary* args = @{@"to": peerID,
-                           @"roomType": @"video",
-                           @"type": answer.type,
-                           @"payload": @{@"type": answer.type, @"sdp": answer.description}};
-    NSError* error;
-    [self.socket emit:@"message" args:@[args] error:&error];
-}
-
-- (void)ICEConnectionStateChanged:(RTCICEConnectionState)state forPeerWithID:(NSString*)peerID {
-    if((state == RTCICEConnectionConnected) || (state == RTCICEConnectionClosed)) {
+- (void)didObserveICEConnectionStateChange:(RTCICEConnectionState)state forPeerWithID:(NSString *)peerID {
+    if ((state == RTCICEConnectionConnected) || (state == RTCICEConnectionClosed)) {
         [self broadcastMuteStates];
     }
     else if (state == RTCICEConnectionFailed) {
@@ -410,8 +410,6 @@
         [[[UIAlertView alloc] initWithTitle:@"Connection Failed" message:@"Talky could not establish a connection to a participant in this chat. Please try again later." delegate:nil cancelButtonTitle:@"Continue" otherButtonTitles:nil] show];
     }
 }
-
-#pragma mark - TLKStreamDelegate methods
 
 - (void)addedStream:(RTCMediaStream *)stream forPeerWithID:(NSString *)peerID {
     TLKMediaStreamWrapper* wrapper = [TLKMediaStreamWrapper new];
@@ -425,7 +423,7 @@
         self.remoteMediaStreamWrappers = [self.remoteMediaStreamWrappers arrayByAddingObject:wrapper];
     }
     
-    if([self.delegate respondsToSelector:@selector(addedStream:)]) {
+    if ([self.delegate respondsToSelector:@selector(addedStream:)]) {
         [self.delegate addedStream:wrapper];
     }
 }
