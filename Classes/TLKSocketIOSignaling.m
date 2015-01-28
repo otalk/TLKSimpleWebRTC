@@ -27,6 +27,8 @@
 
 @end
 
+#pragmamark - TLKSocketIOSignaling
+
 @interface TLKSocketIOSignaling () <
     TLKSignalDelegate>
 {
@@ -50,6 +52,8 @@
 
 @implementation TLKSocketIOSignaling
 
+#pragma mark - object lifecycle
+
 - (instancetype)initWithVideo:(BOOL)allowVideo {
     self = [super init];
     if (self) {
@@ -64,6 +68,8 @@
     return [self initAllowingVideo:YES];
 }
 
+#pragma mark -
+
 - (BOOL)roomIsLocked {
     return [self.roomKey length] > 0;
 }
@@ -72,11 +78,11 @@
     return [NSSet setWithObject:@"roomKey"];
 }
 
--(void)connectToServer:(NSString*)apiServer success:(void(^)(void))successCallback failure:(void(^)(NSError*))failureCallback {
+- (void)connectToServer:(NSString*)apiServer success:(void(^)(void))successCallback failure:(void(^)(NSError*))failureCallback {
     [self connectToServer:apiServer port:8888 secure:YES success:successCallback failure:failureCallback];
 }
 
--(void)connectToServer:(NSString*)apiServer port:(int)port secure:(BOOL)secure success:(void(^)(void))successCallback failure:(void(^)(NSError*))failureCallback {
+- (void)connectToServer:(NSString*)apiServer port:(int)port secure:(BOOL)secure success:(void(^)(void))successCallback failure:(void(^)(NSError*))failureCallback {
     
     if (self.socket) {
         [self disconnectSocket];
@@ -121,7 +127,7 @@
     }];
  }
 
--(void)disconnectSocket {
+- (void)disconnectSocket {
     [self.socket disconnect];
     self.socket = nil;
 }
@@ -139,7 +145,7 @@
     return found;
 }
 
--(void)peerDisconnectedForID:(NSString*)peerID {
+- (void)peerDisconnectedForID:(NSString*)peerID {
     NSMutableArray* mutable = [self.remoteMediaStreamWrappers mutableCopy];
     NSMutableIndexSet* toRemove = [NSMutableIndexSet new];
     
@@ -162,7 +168,7 @@
     }
 }
 
--(void)joinRoom:(NSString*)room withKey:(NSString*)key success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
+- (void)joinRoom:(NSString*)room withKey:(NSString*)key success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
     NSError* error;
     id args;
     if (key) {
@@ -198,11 +204,11 @@
     }
 }
 
--(void)joinRoom:(NSString*)room success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
+- (void)joinRoom:(NSString*)room success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
     [self joinRoom:room withKey:nil success:successCallback failure:failureCallback];
 }
 
--(void)leaveRoom {
+- (void)leaveRoom {
     [[self.currentClients allObjects] enumerateObjectsUsingBlock:^(id peerID, NSUInteger idx, BOOL *stop) {
         [self.webRTC removePeerConnectionForID:peerID];
         [self peerDisconnectedForID:peerID];
@@ -213,7 +219,7 @@
     [self disconnectSocket];
 }
 
--(void)lockRoomWithKey:(NSString*)key success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
+- (void)lockRoomWithKey:(NSString*)key success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
     NSError* error;
     [self.socket emit:@"lockRoom" args:key error:&error ackWithArgs:^(NSArray *data) {
         if (data[0] == [NSNull null]) {
@@ -235,7 +241,7 @@
     }
 }
 
--(void)unlockRoomWithSuccess:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
+- (void)unlockRoomWithSuccess:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
     NSError* error;
     [self.socket emit:@"unlockRoom" args:nil error:&error ackWithArgs:^(NSArray *data) {
         if (data[0] == [NSNull null]) {
