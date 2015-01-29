@@ -129,7 +129,7 @@
     __block TLKMediaStream *found = nil;
     
     [self.remoteMediaStreamWrappers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if ([((TLKMediaStreamWrapper*)obj).peerID isEqualToString:peerIdentifier]) {
+        if ([((TLKMediaStream *)obj).peerID isEqualToString:peerIdentifier]) {
             found = obj;
             *stop = YES;
         }
