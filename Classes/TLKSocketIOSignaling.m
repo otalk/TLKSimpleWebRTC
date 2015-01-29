@@ -139,11 +139,11 @@
 }
 
 - (void)_peerDisconnectedForIdentifier:(NSString *)peerIdentifier {
-    NSMutableArray* mutable = [self.remoteMediaStreamWrappers mutableCopy];
-    NSMutableIndexSet* toRemove = [NSMutableIndexSet new];
+    NSMutableArray *mutable = [self.remoteMediaStreamWrappers mutableCopy];
+    NSMutableIndexSet *toRemove = [NSMutableIndexSet new];
     
     [mutable enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if([((TLKMediaStreamWrapper*)obj).peerID isEqualToString:peerID]) {
+        if ([((TLKMediaStream *)obj).peerID isEqualToString:peerIdentifier]) {
             [toRemove addIndex:idx];
         }
     }];
@@ -154,9 +154,9 @@
     
     self.remoteMediaStreamWrappers = mutable;
     
-    if([self.delegate respondsToSelector:@selector(removedStream:)]) {
-        for(TLKMediaStreamWrapper* wrapper in objects) {
-            [self.delegate removedStream:wrapper];
+    if ([self.delegate respondsToSelector:@selector(removedStream:)]) {
+        for (TLKMediaStream *tlkStream in objects) {
+            [self.delegate removedStream:tlkStream];
         }
     }
 }
@@ -457,28 +457,28 @@
 }
 
 - (void)addedStream:(RTCMediaStream *)stream forPeerWithID:(NSString *)peerID {
-    TLKMediaStreamWrapper* wrapper = [TLKMediaStreamWrapper new];
-    wrapper.stream = stream;
-    wrapper.peerID = peerID;
+    TLKMediaStream *tlkStream = [TLKMediaStream new];
+    tlkStream.stream = stream;
+    tlkStream.peerID = peerID;
     
     if(!self.remoteMediaStreamWrappers) {
-        self.remoteMediaStreamWrappers = @[wrapper];
+        self.remoteMediaStreamWrappers = @[tlkStream];
     }
     else {
-        self.remoteMediaStreamWrappers = [self.remoteMediaStreamWrappers arrayByAddingObject:wrapper];
+        self.remoteMediaStreamWrappers = [self.remoteMediaStreamWrappers arrayByAddingObject:tlkStream];
     }
     
     if ([self.delegate respondsToSelector:@selector(addedStream:)]) {
-        [self.delegate addedStream:wrapper];
+        [self.delegate addedStream:tlkStream];
     }
 }
 
 - (void)removedStream:(RTCMediaStream *)stream forPeerWithID:(NSString *)peerID {
-    NSMutableArray* mutable = [self.remoteMediaStreamWrappers mutableCopy];
-    NSMutableIndexSet* toRemove = [NSMutableIndexSet new];
+    NSMutableArray *mutable = [self.remoteMediaStreamWrappers mutableCopy];
+    NSMutableIndexSet *toRemove = [NSMutableIndexSet new];
     
     [mutable enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if(((TLKMediaStreamWrapper*)obj).stream == stream) {
+        if(((TLKMediaStream *)obj).stream == stream) {
             [toRemove addIndex:idx];
         }
     }];
@@ -490,8 +490,8 @@
     self.remoteMediaStreamWrappers = mutable;
     
     if([self.delegate respondsToSelector:@selector(removedStream:)]) {
-        for(TLKMediaStreamWrapper* wrapper in objects) {
-            [self.delegate removedStream:wrapper];
+        for(TLKMediaStream *stream in objects) {
+            [self.delegate removedStream:stream];
         }
     }
 }

@@ -3,7 +3,7 @@
 //  Copyright (c) 2014 &yet, LLC and TLKWebRTC contributors
 //
 
-#import "TLKMediaStreamWrapper.h"
+#import "TLKMediaStream.h"
 #import "RTCMediaStream.h"
 
 @interface TLKMediaStream ()
