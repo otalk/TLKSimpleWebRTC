@@ -139,8 +139,8 @@
 }
 
 - (void)_peerDisconnectedForIdentifier:(NSString *)peerIdentifier {
-    NSMutableArray *mutable = [self.remoteMediaStreamWrappers mutableCopy];
-    NSMutableIndexSet *toRemove = [NSMutableIndexSet new];
+    NSMutableArray* mutable = [self.remoteMediaStreamWrappers mutableCopy];
+    NSMutableIndexSet* toRemove = [NSMutableIndexSet new];
     
     [mutable enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         if ([((TLKMediaStream *)obj).peerID isEqualToString:peerIdentifier]) {
@@ -155,8 +155,8 @@
     self.remoteMediaStreamWrappers = mutable;
     
     if ([self.delegate respondsToSelector:@selector(removedStream:)]) {
-        for (TLKMediaStream *tlkStream in objects) {
-            [self.delegate removedStream:tlkStream];
+        for (TLKMediaStream *stream in objects) {
+            [self.delegate removedStream:stream];
         }
     }
 }
@@ -192,8 +192,8 @@
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             
             if (!weakSelf.webRTC) {
-                weakSelf.webRTC = [[TLKWebRTC alloc] initAllowingVideo:weakSelf.allowVideo != 0];
-                [weakSelf.webRTC setSignalDelegate:weakSelf];
+                weakSelf.webRTC = [[TLKWebRTC alloc] initWithVideo:weakSelf.allowVideo != 0];
+                weakSelf.delegate = weakSelf;
             }
             
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -307,6 +307,25 @@
     }
 }
 
+#pragma mark - Mute/Unmute utilities
+
+- (void)_sendMuteMessagesForTrack:(NSString *)trackString mute:(BOOL)mute {
+    NSError *error = nil;
+
+    for (NSString* peerID in self.currentClients) {
+        [self.socket emit:@"message"
+                     args:@{@"to":peerID,
+                            @"type" : mute ? @"mute" : @"unmute",
+                            @"payload": @{@"name":trackString}}
+                    error:&error];
+    }
+}
+
+- (void)_broadcastMuteStates {
+    [self _sendMuteMessagesForTrack:@"audio" mute:self.localAudioMuted];
+    [self _sendMuteMessagesForTrack:@"video" mute:self.localVideoMuted];
+}
+
 #pragma mark - SocketIO methods
 
 - (void)messageReceived:(id)data {
@@ -414,7 +433,7 @@
 
 #pragma mark - TLKWebRTCDelegate
 
-- (void)didSendSDPOffer:(RTCSessionDescription *)offer forPeerWithID:(NSString *)peerID {
+- (void)webRTC:(TLKWebRTC *)webRTC didSendSDPOffer:(RTCSessionDescription *)offer forPeerWithID:(NSString *)peerID {
     NSDictionary *args = @{@"to": peerID,
                            @"roomType": @"video",
                            @"type": offer.type,
@@ -423,7 +442,7 @@
     [self.socket emit:@"message" args:@[args] error:&error];
 }
 
-- (void)didSendSDPAnswer:(RTCSessionDescription *)answer forPeerWithID:(NSString *)peerID {
+- (void)webRTC:(TLKWebRTC *)webRTC didSendSDPAnswer:(RTCSessionDescription *)answer forPeerWithID:(NSString* )peerID {
     NSDictionary *args = @{@"to": peerID,
                            @"roomType": @"video",
                            @"type": answer.type,
@@ -432,7 +451,7 @@
     [self.socket emit:@"message" args:@[args] error:&error];
 }
 
-- (void)didSendICECandidate:(RTCICECandidate *)candidate forPeerWithID:(NSString *)peerID {
+- (void)webRTC:(TLKWebRTC *)webRTC didSendICECandidate:(RTCICECandidate *)candidate forPeerWithID:(NSString *)peerID {
     NSDictionary *args = @{@"to": peerID,
                            @"roomType": @"video",
                            @"type": @"candidate",
@@ -443,7 +462,7 @@
     [self.socket emit:@"message" args:@[args] error:&error];
 }
 
-- (void)didObserveICEConnectionStateChange:(RTCICEConnectionState)state forPeerWithID:(NSString *)peerID {
+- (void)webRTC:(TLKWebRTC *)webRTC didObserveICEConnectionStateChange:(RTCICEConnectionState)state forPeerWithID:(NSString *)peerID {
     if ((state == RTCICEConnectionConnected) || (state == RTCICEConnectionClosed)) {
         [self _broadcastMuteStates];
     }
@@ -456,7 +475,7 @@
     }
 }
 
-- (void)addedStream:(RTCMediaStream *)stream forPeerWithID:(NSString *)peerID {
+- (void)webRTC:(TLKWebRTC *)webRTC addedStream:(RTCMediaStream *)stream forPeerWithID:(NSString *)peerID {
     TLKMediaStream *tlkStream = [TLKMediaStream new];
     tlkStream.stream = stream;
     tlkStream.peerID = peerID;
@@ -473,7 +492,7 @@
     }
 }
 
-- (void)removedStream:(RTCMediaStream *)stream forPeerWithID:(NSString *)peerID {
+- (void)webRTC:(TLKWebRTC *)webRTC removedStream:(RTCMediaStream *)stream forPeerWithID:(NSString *)peerID {
     NSMutableArray *mutable = [self.remoteMediaStreamWrappers mutableCopy];
     NSMutableIndexSet *toRemove = [NSMutableIndexSet new];
     
@@ -494,25 +513,6 @@
             [self.delegate removedStream:stream];
         }
     }
-}
-
-#pragma mark - Mute/Unmute utilities
-
-- (void)_sendMuteMessagesForTrack:(NSString *)trackString mute:(BOOL)mute {
-    NSError *error = nil;
-
-    for (NSString* peerID in self.currentClients) {
-        [self.socket emit:@"message"
-                     args:@{@"to":peerID,
-                            @"type" : mute ? @"mute" : @"unmute",
-                            @"payload": @{@"name":trackString}}
-                    error:&error];
-    }
-}
-
-- (void)_broadcastMuteStates {
-    [self _sendMuteMessagesForTrack:@"audio" mute:self.localAudioMuted];
-    [self _sendMuteMessagesForTrack:@"video" mute:self.localVideoMuted];
 }
 
 @end
