@@ -36,10 +36,10 @@
 
 @end
 
-#pragmamark - TLKSocketIOSignaling
+#pragma mark - TLKSocketIOSignaling
 
 @interface TLKSocketIOSignaling () <
-    TLKSignalDelegate>
+    TLKWebRTCDelegate>
 {
     BOOL _localAudioMuted;
     BOOL _localVideoMuted;
@@ -255,7 +255,7 @@
 - (void)leaveRoom {
     [[self.currentClients allObjects] enumerateObjectsUsingBlock:^(id peerID, NSUInteger idx, BOOL *stop) {
         [self.webRTC removePeerConnectionForID:peerID];
-        [self peerDisconnectedForID:peerID];
+        [self _peerDisconnectedForIdentifier:peerID];
     }];
     
     self.currentClients = [[NSMutableSet alloc] init];
@@ -386,7 +386,7 @@
     } else if ([eventName isEqualToString:@"remove"]) {
         
         [self.webRTC removePeerConnectionForID:dictionary[@"id"]];
-        [self peerDisconnectedForID:dictionary[@"id"]];
+        [self _peerDisconnectedForIdentifier:dictionary[@"id"]];
         
         [self.currentClients removeObject:dictionary[@"id"]];
         
