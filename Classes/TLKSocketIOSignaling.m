@@ -469,7 +469,7 @@
                            @"roomType": @"video",
                            @"type": @"candidate",
                            @"payload": @{ @"candidate" : @{@"sdpMid": candidate.sdpMid,
-                                                           @"sdpMLineIndex": [NSString stringWithFormat:@"%d", candidate.sdpMLineIndex],
+                                                           @"sdpMLineIndex": [NSString stringWithFormat:@"%ld", (long)candidate.sdpMLineIndex],
                                                            @"candidate": candidate.sdp}}};
     NSError *error = nil;
     [self.socket emit:@"message" args:@[args] error:&error];
