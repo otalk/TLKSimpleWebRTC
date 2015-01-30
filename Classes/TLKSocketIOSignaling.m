@@ -334,37 +334,49 @@
     NSDictionary *dictionary = nil;
     
     if ([eventName isEqualToString:@"locked"]) {
+        
         self.roomKey = (NSString*)[data objectAtIndex:0];
-        if([self.delegate respondsToSelector:@selector(lockChange:)]) {
-            [self.delegate lockChange:TRUE];
+        if ([self.delegate respondsToSelector:@selector(socketIOSignaling:didChangeLock:)]) {
+            [self.delegate socketIOSignaling:self didChangeLock:YES];
         }
+        
     } else if ([eventName isEqualToString:@"unlocked"]) {
+        
         self.roomKey = nil;
-        if([self.delegate respondsToSelector:@selector(lockChange:)]) {
-            [self.delegate lockChange:FALSE];
+        if ([self.delegate respondsToSelector:@selector(socketIOSignaling:didChangeLock:)]) {
+            [self.delegate socketIOSignaling:self didChangeLock:NO];
         }
+        
     } else if ([eventName isEqualToString:@"passwordRequired"]) {
-        if([self.delegate respondsToSelector:@selector(socketIOSignalingRequiresServerPassword:)]) {
+        
+        if ([self.delegate respondsToSelector:@selector(socketIOSignalingRequiresServerPassword:)]) {
             [self.delegate socketIOSignalingRequiresServerPassword:self];
         }
+        
     } else if ([eventName isEqualToString:@"stunservers"] || [eventName isEqualToString:@"turnservers"]) {
-        NSArray* serverList = data[0];
-        for(NSDictionary* info in serverList) {
-            NSString* username = info[@"username"] ? info[@"username"] : @"";
-            NSString* password = info[@"credential"] ? info[@"credential"] : @"";
-            RTCICEServer* server = [[RTCICEServer alloc] initWithURI:[NSURL URLWithString:info[@"url"]] username:username password:password];
+        
+        NSArray *serverList = data[0];
+        for (NSDictionary *info in serverList) {
+            NSString *username = info[@"username"] ? info[@"username"] : @"";
+            NSString *password = info[@"credential"] ? info[@"credential"] : @"";
+            RTCICEServer *server = [[RTCICEServer alloc] initWithURI:[NSURL URLWithString:info[@"url"]] username:username password:password];
             [self.webRTC addICEServer:server];
         }
+        
     } else {
+        
         dictionary = data[0];
         
-        if(![dictionary isKindOfClass:[NSDictionary class]]) {
+        if (![dictionary isKindOfClass:[NSDictionary class]]) {
             dictionary = nil;
         }
+        
     }
     
     if ([dictionary[@"type"] isEqualToString:@"iceFailed"]) {
+    
         [[[UIAlertView alloc] initWithTitle:@"Connection Failed" message:@"Talky could not establish a connection to a participant in this chat. Please try again later." delegate:nil cancelButtonTitle:@"Continue" otherButtonTitles:nil] show];
+    
     } else if ([dictionary[@"type"] isEqualToString:@"candidate"]) {
         
         RTCICECandidate* candidate = [[RTCICECandidate alloc] initWithMid:dictionary[@"payload"][@"candidate"][@"sdpMid"]
@@ -372,8 +384,6 @@
                                                                       sdp:dictionary[@"payload"][@"candidate"][@"candidate"]];
         
         [self.webRTC addICECandidate:candidate forPeerWithID:dictionary[@"from"]];
-        
-        
         
     } else if ([dictionary[@"type"] isEqualToString:@"answer"]) {
         
@@ -409,17 +419,21 @@
         [self.currentClients removeObject:dictionary[@"id"]];
         
     } else if ([dictionary[@"payload"][@"name"] isEqualToString:@"audio"]) {
+    
         TLKMediaStream *stream = [self _streamForPeerIdentifier:dictionary[@"from"]];
         stream.audioMuted = [dictionary[@"type"] isEqualToString:@"mute"];
-        if([self.delegate respondsToSelector:@selector(peer:toggledAudioMute:)]) {
-            [self.delegate peer:dictionary[@"from"] toggledAudioMute:stream.audioMuted];
+        if([self.delegate respondsToSelector:@selector(socketIOSignaling:peer:toggledAudioMute:)]) {
+            [self.delegate socketIOSignaling:self peer:dictionary[@"from"] toggledAudioMute:stream.audioMuted];
         }
+    
     } else if ([dictionary[@"payload"][@"name"] isEqualToString:@"video"]) {
+    
         TLKMediaStream *stream = [self _streamForPeerIdentifier:dictionary[@"from"]];
         stream.videoMuted = [dictionary[@"type"] isEqualToString:@"mute"];
-        if([self.delegate respondsToSelector:@selector(peer:toggledVideoMute:)]) {
-            [self.delegate peer:dictionary[@"from"] toggledVideoMute:stream.videoMuted];
+        if([self.delegate respondsToSelector:@selector(socketIOSignaling:peer:toggledVideoMute:)]) {
+            [self.delegate socketIOSignaling:self peer:dictionary[@"from"] toggledVideoMute:stream.videoMuted];
         }
+    
     }
 }
 
@@ -479,7 +493,7 @@
     tlkStream.stream = stream;
     tlkStream.peerID = peerID;
     
-    if(!self.remoteMediaStreamWrappers) {
+    if (!self.remoteMediaStreamWrappers) {
         self.remoteMediaStreamWrappers = @[tlkStream];
     }
     else {

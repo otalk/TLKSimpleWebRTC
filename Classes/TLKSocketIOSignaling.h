@@ -57,8 +57,8 @@ typedef void (^TLKSocketIOSignalingFailureBlock)(NSError *error);
 - (void)socketIOSignaling:(TLKSocketIOSignaling *)socketIOSignaling addedStream:(TLKMediaStream *)stream;
 - (void)socketIOSignaling:(TLKSocketIOSignaling *)socketIOSignaling removedStream:(TLKMediaStream *)stream;
 
-- (void)peer:(NSString *)peer toggledAudioMute:(BOOL)mute;
-- (void)peer:(NSString *)peer toggledVideoMute:(BOOL)mute;
-- (void)lockChange:(BOOL)locked;
+- (void)socketIOSignaling:(TLKSocketIOSignaling *)socketIOSignaling peer:(NSString *)peer toggledAudioMute:(BOOL)mute;
+- (void)socketIOSignaling:(TLKSocketIOSignaling *)socketIOSignaling peer:(NSString *)peer toggledVideoMute:(BOOL)mute;
+- (void)socketIOSignaling:(TLKSocketIOSignaling *)socketIOSignaling didChangeLock:(BOOL)locked;
 
 @end
