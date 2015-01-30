@@ -154,9 +154,9 @@
     
     self.remoteMediaStreamWrappers = mutable;
     
-    if ([self.delegate respondsToSelector:@selector(removedStream:)]) {
+    if ([self.delegate respondsToSelector:@selector(socketIOSignaling:removedStream:)]) {
         for (TLKMediaStream *stream in objects) {
-            [self.delegate removedStream:stream];
+            [self.delegate socketIOSignaling:self removedStream:stream];
         }
     }
 }
@@ -192,7 +192,7 @@
             
             if (!weakSelf.webRTC) {
                 weakSelf.webRTC = [[TLKWebRTC alloc] initWithVideo:weakSelf.allowVideo != 0];
-                weakSelf.delegate = weakSelf;
+                weakSelf.webRTC.delegate = weakSelf;
             }
             
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -344,8 +344,8 @@
             [self.delegate lockChange:FALSE];
         }
     } else if ([eventName isEqualToString:@"passwordRequired"]) {
-        if([self.delegate respondsToSelector:@selector(serverRequiresPassword:)]) {
-            [self.delegate serverRequiresPassword:self];
+        if([self.delegate respondsToSelector:@selector(socketIOSignalingRequiresServerPassword:)]) {
+            [self.delegate socketIOSignalingRequiresServerPassword:self];
         }
     } else if ([eventName isEqualToString:@"stunservers"] || [eventName isEqualToString:@"turnservers"]) {
         NSArray* serverList = data[0];
@@ -466,9 +466,9 @@
         [self _broadcastMuteStates];
     }
     else if (state == RTCICEConnectionFailed) {
-        NSDictionary* args = @{@"to": peerID,
+        NSDictionary *args = @{@"to": peerID,
                                @"type": @"iceFailed"};
-        NSError* error;
+        NSError *error = nil;
         [self.socket emit:@"message" args:@[args] error:&error];
         [[[UIAlertView alloc] initWithTitle:@"Connection Failed" message:@"Talky could not establish a connection to a participant in this chat. Please try again later." delegate:nil cancelButtonTitle:@"Continue" otherButtonTitles:nil] show];
     }
@@ -486,8 +486,8 @@
         self.remoteMediaStreamWrappers = [self.remoteMediaStreamWrappers arrayByAddingObject:tlkStream];
     }
     
-    if ([self.delegate respondsToSelector:@selector(addedStream:)]) {
-        [self.delegate addedStream:tlkStream];
+    if ([self.delegate respondsToSelector:@selector(socketIOSignaling:addedStream:)]) {
+        [self.delegate socketIOSignaling:self addedStream:tlkStream];
     }
 }
 
@@ -496,20 +496,20 @@
     NSMutableIndexSet *toRemove = [NSMutableIndexSet new];
     
     [mutable enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if(((TLKMediaStream *)obj).stream == stream) {
+        if (((TLKMediaStream *)obj).stream == stream) {
             [toRemove addIndex:idx];
         }
     }];
     
-    NSArray* objects = [self.remoteMediaStreamWrappers objectsAtIndexes:toRemove];
+    NSArray *objects = [self.remoteMediaStreamWrappers objectsAtIndexes:toRemove];
     
     [mutable removeObjectsAtIndexes:toRemove];
     
     self.remoteMediaStreamWrappers = mutable;
     
-    if([self.delegate respondsToSelector:@selector(removedStream:)]) {
-        for(TLKMediaStream *stream in objects) {
-            [self.delegate removedStream:stream];
+    if ([self.delegate respondsToSelector:@selector(socketIOSignaling:removedStream:)]) {
+        for (TLKMediaStream *stream in objects) {
+            [self.delegate socketIOSignaling:self removedStream:stream];
         }
     }
 }

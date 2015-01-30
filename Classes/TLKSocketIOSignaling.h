@@ -52,10 +52,10 @@ typedef void (^TLKSocketIOSignalingFailureBlock)(NSError *error);
 
 // Called when a connect request has failed due to a bad room key. Delegate is expected to
 // get the room key from the user, and then call connect again with the correct key
-- (void)serverRequiresPassword:(TLKSocketIOSignaling *)server;
+- (void)socketIOSignalingRequiresServerPassword:(TLKSocketIOSignaling *)socketIOSignaling;
 
-- (void)addedStream:(TLKMediaStream *)stream;
-- (void)removedStream:(TLKMediaStream *)stream;
+- (void)socketIOSignaling:(TLKSocketIOSignaling *)socketIOSignaling addedStream:(TLKMediaStream *)stream;
+- (void)socketIOSignaling:(TLKSocketIOSignaling *)socketIOSignaling removedStream:(TLKMediaStream *)stream;
 
 - (void)peer:(NSString *)peer toggledAudioMute:(BOOL)mute;
 - (void)peer:(NSString *)peer toggledVideoMute:(BOOL)mute;
