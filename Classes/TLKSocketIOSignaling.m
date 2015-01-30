@@ -168,25 +168,24 @@
 }
 
 - (void)connectToServer:(NSString*)apiServer port:(int)port secure:(BOOL)secure success:(void(^)(void))successCallback failure:(void(^)(NSError*))failureCallback {
-    
     if (self.socket) {
         [self _disconnectSocket];
     }
     
-    __weak TLKSocketIOSignaling* weakSelf = self;
+    __weak TLKSocketIOSignaling *weakSelf = self;
 
     self.socket = [[AZSocketIO alloc] initWithHost:apiServer andPort:[NSString stringWithFormat:@"%d",port] secure:secure];
 
     NSString* originURL = [NSString stringWithFormat:@"https://%@:%d", apiServer, port];
     [self.socket setValue:originURL forHTTPHeaderField:@"Origin"];
 
-    self.socket.messageReceivedBlock = ^(id data) { [weakSelf messageReceived:data]; };
-    self.socket.eventReceivedBlock = ^(NSString* eventName, id data) { [weakSelf eventReceived:eventName withData:data]; };
-    self.socket.disconnectedBlock = ^() { [weakSelf socketDisconnected]; };
-    self.socket.errorBlock = ^(NSError* error) { [weakSelf socketReceivedError:error]; };
+    // setup SocketIO blocks
+    self.socket.messageReceivedBlock = ^(id data) { [weakSelf _socketMessageReceived:data]; };
+    self.socket.eventReceivedBlock = ^(NSString *eventName, id data) { [weakSelf _socketEventReceived:eventName withData:data]; };
+    self.socket.disconnectedBlock = ^() { [weakSelf _socketDisconnected]; };
+    self.socket.errorBlock = ^(NSError *error) { [weakSelf _socketReceivedError:error]; };
     
     self.socket.reconnectionLimit = 5.0f;
-    
     
     [self.socket connectWithSuccess:^{
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -242,13 +241,13 @@
             failureCallback();
         }
     }];
-    if(error) {
+    if (error) {
         NSLog(@"Error: %@", error);
         failureCallback();
     }
 }
 
-- (void)joinRoom:(NSString*)room success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
+- (void)joinRoom:(NSString *)room success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
     [self joinRoom:room withKey:nil success:successCallback failure:failureCallback];
 }
 
@@ -263,7 +262,7 @@
     [self _disconnectSocket];
 }
 
-- (void)lockRoomWithKey:(NSString*)key success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
+- (void)lockRoomWithKey:(NSString *)key success:(void(^)(void))successCallback failure:(void(^)(void))failureCallback {
     NSError *error = nil;
     [self.socket emit:@"lockRoom" args:key error:&error ackWithArgs:^(NSArray *data) {
         if (data[0] == [NSNull null]) {
@@ -299,7 +298,7 @@
             }
         }
     }];
-    if(error) {
+    if (error) {
         NSLog(@"Error: %@", error);
         if(failureCallback) {
             failureCallback();
@@ -328,11 +327,11 @@
 
 #pragma mark - SocketIO methods
 
-- (void)messageReceived:(id)data {
+- (void)_socketMessageReceived:(id)data {
 }
 
-- (void)eventReceived:(NSString*)eventName withData:(id)data {
-    NSDictionary* dictionary;
+- (void)_socketEventReceived:(NSString*)eventName withData:(id)data {
+    NSDictionary *dictionary = nil;
     
     if ([eventName isEqualToString:@"locked"]) {
         self.roomKey = (NSString*)[data objectAtIndex:0];
@@ -424,10 +423,10 @@
     }
 }
 
-- (void)socketDisconnected {
+- (void)_socketDisconnected {
 }
 
-- (void)socketReceivedError:(NSError *)error {
+- (void)_socketReceivedError:(NSError *)error {
     DLog(@"socket received error occured %@", error);
 }
 
