@@ -46,15 +46,21 @@
 - (instancetype)initAllowingVideo:(BOOL)allowVideo {
     self = [super init];
     if (self) {
-        self->_allowVideo = allowVideo;
+        _allowVideo = allowVideo;
         self.currentClients = [[NSMutableSet alloc] init];
     }
     return self;
 }
 
-- (instancetype)init
-{
+- (instancetype)initAllowingVideoWithDevice:(AVCaptureDevice *)device {
+    _videoDevice = device;
     return [self initAllowingVideo:YES];
+}
+
+- (instancetype)init {
+    // Set the default device
+    AVCaptureDevice* frontCamera = [[AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo] lastObject];
+    return [self initAllowingVideoWithDevice:frontCamera];
 }
 
 - (BOOL)roomIsLocked {
@@ -94,7 +100,11 @@
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             
             if (!weakSelf.webRTC) {
-                weakSelf.webRTC = [[TLKWebRTC alloc] initAllowingVideo:weakSelf.allowVideo != 0];
+                if (weakSelf.allowVideo && weakSelf.videoDevice) {
+                    weakSelf.webRTC = [[TLKWebRTC alloc] initAllowingVideoWithDevice:self.videoDevice];
+                } else {
+                   weakSelf.webRTC = [[TLKWebRTC alloc] initAllowingVideo:NO];
+                }
                 [weakSelf.webRTC setSignalDelegate:weakSelf];
             }
             

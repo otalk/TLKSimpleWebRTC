@@ -13,6 +13,7 @@
 @interface TLKSocketIOSignaling : NSObject <TLKSignalDelegate>
 
 - (instancetype)initAllowingVideo:(BOOL)allowVideo;
+- (instancetype)initAllowingVideoWithDevice:(AVCaptureDevice *)device;
 - (instancetype)init; // allows video by default
 
 -(void)connectToServer:(NSString*)apiServer success:(void(^)(void))successCallback failure:(void(^)(NSError*))failureCallback;
@@ -25,6 +26,9 @@
 -(void)unlockRoomWithSuccess:(void(^)(void))successCallback failure:(void(^)(void))failureCallback;
 
 @property (readonly, nonatomic) BOOL allowVideo;
+
+// Allow the user to see the configured video capture device
+@property (readonly) AVCaptureDevice* videoDevice;
 
 @property (readonly, nonatomic) RTCMediaStream* localMediaStream;
 
