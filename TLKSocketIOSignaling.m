@@ -103,7 +103,7 @@
                 if (weakSelf.allowVideo && weakSelf.videoDevice) {
                     weakSelf.webRTC = [[TLKWebRTC alloc] initAllowingVideoWithDevice:self.videoDevice];
                 } else {
-                   weakSelf.webRTC = [[TLKWebRTC alloc] initAllowingVideo:NO];
+                    weakSelf.webRTC = [[TLKWebRTC alloc] initAllowingVideo:NO];
                 }
                 [weakSelf.webRTC setSignalDelegate:weakSelf];
             }
