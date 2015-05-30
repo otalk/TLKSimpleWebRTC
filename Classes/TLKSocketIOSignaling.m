@@ -100,7 +100,7 @@
 
 #pragma mark - object lifecycle
 
-- (instancetype)initAllowingVideoWithDevice:(AVCaptureDevice *)device {
+- (instancetype)initWithVideoDevice:(AVCaptureDevice *)device {
 	self = [super init];
     if (self) {
     	if (device) {
@@ -112,18 +112,18 @@
     return self;
 }
 
-- (instancetype)initAllowingVideo:(BOOL)allowVideo {
+- (instancetype)initWithVideo:(BOOL)allowVideo {
 	// Set front camera as the default device
 	AVCaptureDevice* frontCamera;
 	if (allowVideo) {
 		frontCamera = [[AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo] lastObject];
 	}
-	return [self initAllowingVideoWithDevice:frontCamera];
+	return [self initWithVideoDevice:frontCamera];
 }
 
 - (instancetype)init {
 	// Use default device
-	return [self initAllowingVideo:YES];
+	return [self initWithVideo:YES];
 }
 
 #pragma mark - peer/room utilities
@@ -204,9 +204,9 @@
             
             if (!weakSelf.webRTC) {
                 if (weakSelf.allowVideo && weakSelf.videoDevice) {
-                    weakSelf.webRTC = [[TLKWebRTC alloc] initAllowingVideoWithDevice:self.videoDevice];
+                    weakSelf.webRTC = [[TLKWebRTC alloc] initWithVideoDevice:self.videoDevice];
                 } else {
-                    weakSelf.webRTC = [[TLKWebRTC alloc] initAllowingVideo:NO];
+                    weakSelf.webRTC = [[TLKWebRTC alloc] initWithVideo:NO];
                 }
                 weakSelf.webRTC.delegate = weakSelf;
             }

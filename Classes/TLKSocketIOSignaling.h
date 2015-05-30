@@ -15,8 +15,8 @@ typedef void (^TLKSocketIOSignalingFailureBlock)(NSError *error);
 
 @interface TLKSocketIOSignaling : NSObject
 
-- (instancetype)initAllowingVideoWithDevice:(AVCaptureDevice *)device;
-- (instancetype)initAllowingVideo:(BOOL)allowVideo;
+- (instancetype)initWithVideoDevice:(AVCaptureDevice *)device;
+- (instancetype)initWithVideo:(BOOL)allowVideo;
 
 @property (weak, nonatomic) id <TLKSocketIOSignalingDelegate> delegate;
 
