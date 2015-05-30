@@ -372,6 +372,8 @@
         }
         
     }
+
+    NSLog(@"eventName = %@, type = %@, from = %@, to = %@",eventName, dictionary[@"type"], dictionary[@"from"], dictionary[@"to"]);
     
     if ([dictionary[@"type"] isEqualToString:@"iceFailed"]) {
     
