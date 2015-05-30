@@ -98,6 +98,10 @@
     return [self.roomKey length] > 0;
 }
 
++ (NSSet *)keyPathsForValuesAffectingRoomLocked {
+    return [NSSet setWithObject:@"roomKey"];
+}
+
 #pragma mark - object lifecycle
 
 - (instancetype)initWithVideoDevice:(AVCaptureDevice *)device {
@@ -127,10 +131,6 @@
 }
 
 #pragma mark - peer/room utilities
-
-+ (NSSet *)keyPathsForValuesAffectingRoomIsLocked {
-    return [NSSet setWithObject:@"roomKey"];
-}
 
 - (void)_disconnectSocket {
     [self.socket disconnect];
