@@ -15,7 +15,8 @@ typedef void (^TLKSocketIOSignalingFailureBlock)(NSError *error);
 
 @interface TLKSocketIOSignaling : NSObject
 
-- (instancetype)initWithVideo:(BOOL)allowVideo;
+- (instancetype)initAllowingVideo:(BOOL)allowVideo;
+- (instancetype)initAllowingVideoWithDevice:(AVCaptureDevice *)device;
 
 @property (weak, nonatomic) id <TLKSocketIOSignalingDelegate> delegate;
 
@@ -29,6 +30,9 @@ typedef void (^TLKSocketIOSignalingFailureBlock)(NSError *error);
 - (void)unlockRoomWithSuccess:(void(^)(void))successCallback failure:(void(^)(void))failureCallback;
 
 @property (readonly, nonatomic) BOOL allowVideo;
+
+// Allow the user to see the configured video capture device
+@property (readonly) AVCaptureDevice* videoDevice;
 
 @property (readonly, nonatomic) RTCMediaStream *localMediaStream;
 
