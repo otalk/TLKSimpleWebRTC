@@ -100,23 +100,30 @@
 
 #pragma mark - object lifecycle
 
-- (instancetype)initAllowingVideo:(BOOL)allowVideo {
-    self = [super init];
+- (instancetype)initAllowingVideoWithDevice:(AVCaptureDevice *)device {
+	self = [super init];
     if (self) {
-        _allowVideo = allowVideo;
+    	if (device) {
+			_allowVideo = YES;
+			_videoDevice = device;
+        }
         self.currentClients = [[NSMutableSet alloc] init];
     }
     return self;
 }
-- (instancetype)initAllowingVideoWithDevice:(AVCaptureDevice *)device {
-    _videoDevice = device;
-    return [self initWithVideo:YES];
+
+- (instancetype)initAllowingVideo:(BOOL)allowVideo {
+	// Set front camera as the default device
+	AVCaptureDevice* frontCamera;
+	if (allowVideo) {
+		frontCamera = [[AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo] lastObject];
+	}
+	return [self initAllowingVideoWithDevice:frontCamera];
 }
 
 - (instancetype)init {
-    // Set the default device
-    AVCaptureDevice* frontCamera = [[AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo] lastObject];
-    return [self initAllowingVideoWithDevice:frontCamera];
+	// Use default device
+	return [self initAllowingVideo:YES];
 }
 
 #pragma mark - peer/room utilities
