@@ -5,6 +5,7 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
+#import "TLKWebRTC.h"
 
 typedef void (^TLKSocketIOSignalingSuccessBlock)(void);
 typedef void (^TLKSocketIOSignalingFailureBlock)(NSError *error);
@@ -48,6 +49,8 @@ typedef void (^TLKSocketIOSignalingFailureBlock)(NSError *error);
 @property (readonly, nonatomic, getter=isRoomLocked) BOOL roomLocked;
 @property (readonly, nonatomic) NSString *roomName;
 @property (readonly, nonatomic) NSString *roomKey;
+
+@property (nonatomic, strong) TLKWebRTC *webRTC;
 
 @end
 
