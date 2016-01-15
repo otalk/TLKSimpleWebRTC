@@ -198,26 +198,24 @@
     self.socket.errorBlock = ^(NSError *error) { [weakSelf _socketReceivedError:error]; };
     
     self.socket.reconnectionLimit = 5.0f;
+
+    if (!self.webRTC) {
+        if (self.allowVideo && self.videoDevice) {
+            self.webRTC = [[TLKWebRTC alloc] initWithVideoDevice:self.videoDevice];
+        } else {
+            self.webRTC = [[TLKWebRTC alloc] initWithVideo:NO];
+        }
+        self.webRTC.delegate = self;
+    }
     
     [self.socket connectWithSuccess:^{
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            TLKSocketIOSignaling *strongSelf = weakSelf;
+            strongSelf.localMediaStream = strongSelf.webRTC.localMediaStream;
             
-            if (!weakSelf.webRTC) {
-                if (weakSelf.allowVideo && weakSelf.videoDevice) {
-                    weakSelf.webRTC = [[TLKWebRTC alloc] initWithVideoDevice:self.videoDevice];
-                } else {
-                    weakSelf.webRTC = [[TLKWebRTC alloc] initWithVideo:NO];
-                }
-                weakSelf.webRTC.delegate = weakSelf;
+            if (successCallback) {
+                successCallback();
             }
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                weakSelf.localMediaStream = weakSelf.webRTC.localMediaStream;
-                
-                if (successCallback) {
-                    successCallback();
-                }
-            });
         });
     } andFailure:^(NSError *error) {
         DLog(@"Failed to connect socket.io: %@", error);
