@@ -7,7 +7,6 @@
 #import "TLKSocketIOSignaling.h"
 #import "TLKMediaStream.h"
 
-#import "TLKWebRTC.h"
 #import "AZSocketIO.h"
 #import "RTCMediaStream.h"
 #import "RTCICEServer.h"
@@ -46,7 +45,6 @@
 }
 
 @property (nonatomic, strong) AZSocketIO *socket;
-@property (nonatomic, strong) TLKWebRTC *webRTC;
 
 @property (nonatomic, readwrite) NSString *roomName;
 @property (nonatomic, readwrite) NSString *roomKey;
